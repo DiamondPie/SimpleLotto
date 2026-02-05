@@ -147,12 +147,26 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
                 if (!(sender instanceof Player)) return true;
                 handleToggleConfirm((Player) sender);
                 break;
+            case "intro":
+                handleIntro(sender);
+                break;
             case "help":
             default:
                 sendHelp(sender);
                 break;
         }
         return true;
+    }
+
+    private void handleIntro(CommandSender sender) {
+        sender.sendMessage("§8§m--------------------------------");
+        sender.sendMessage("§6§l📖 乐透玩法说明");
+        sender.sendMessage("§e1. 服务器定期发起乐透活动");
+        sender.sendMessage(Component.text("§e2. 玩家输入 §b/lotto join §e并支付 ").append(getCurrencyComponent(costAmount)).append(Component.text("§e 即可参与")));
+        sender.sendMessage("§e3. 支付的货币会累积进入奖池");
+        sender.sendMessage("§e4. 倒计时结束后，系统随机抽取一名参与者");
+        sender.sendMessage("§e5. 赢家将拿走奖池内的所有货币！");
+        sender.sendMessage("§8§m--------------------------------");
     }
 
     private void sendInfo(CommandSender sender) {
