@@ -1,6 +1,7 @@
 package com.diamondpie.simplelotto;
 
 import net.kyori.adventure.text.Component;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -16,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public final class Main extends JavaPlugin implements CommandExecutor {
+public final class Main extends JavaPlugin implements CommandExecutor, TabCompleter {
 
     private boolean isRunning = false;
     private long endTime = 0;
@@ -39,8 +40,12 @@ public final class Main extends JavaPlugin implements CommandExecutor {
         saveDefaultConfig();
         loadConfigValues();
 
-        // 注册命令
-        Objects.requireNonNull(getCommand("lotto")).setExecutor(this);
+        // 注册命令和补全器
+        var cmd = getCommand("lotto");
+        if (cmd != null) {
+            cmd.setExecutor(this);
+            cmd.setTabCompleter(this); // 注册补全
+        }
 
         // 启动自动循环任务
         startCycleTimer();
@@ -381,5 +386,26 @@ public final class Main extends JavaPlugin implements CommandExecutor {
         // 简单的名称格式化，比如 DIAMOND -> Diamond
         String name = currencyMaterial.name().toLowerCase().replace("_", " ");
         return name.substring(0, 1).toUpperCase() + name.substring(1);
+    }
+
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+        if (args.length == 1) {
+            List<String> completions = new ArrayList<>();
+            // 所有人可用的命令
+            completions.add("join");
+            completions.add("help");
+            completions.add("intro"); // 新命令
+            completions.add("toggleconfirm");
+
+            // 仅管理员可见的命令
+            if (sender.hasPermission("lotto.admin")) {
+                completions.add("start");
+                completions.add("end");
+                completions.add("cancel");
+            }
+            return completions;
+        }
+        return Collections.emptyList();
     }
 }
