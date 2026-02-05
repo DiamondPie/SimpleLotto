@@ -221,7 +221,13 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    pendingConfirmation.remove(player.getUniqueId());
+                    // 只有当玩家还在 pending 列表里（说明没点确认），才提示超时
+                    if (pendingConfirmation.contains(player.getUniqueId())) {
+                        pendingConfirmation.remove(player.getUniqueId());
+                        if (player.isOnline()) {
+                            player.sendMessage("§c[乐透] 确认超时，请重新输入 /lotto join 参与");
+                        }
+                    }
                 }
             }.runTaskLater(this, 200L);
             return;
