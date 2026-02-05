@@ -1,0 +1,14 @@
+name: SimpleLotto
+version: 1.0
+main: com.diamondpie.simplelotto.Main
+api-version: 1.21
+authors: [ DiamondPie ]
+commands:
+  lotto:
+    description: 乐透系统主命令
+    usage: /lotto help
+    aliases: [ lottery ]
+permissions:
+  lotto.admin:
+    description: 允许使用管理员乐透命令
+    default: op
