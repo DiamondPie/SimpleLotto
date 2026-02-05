@@ -393,6 +393,7 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
     private void sendHelp(CommandSender sender) {
         sender.sendMessage("§6§lSimpleLotto 帮助");
         sender.sendMessage("§e/lotto §7- 查看当前乐透状态");
+        sender.sendMessage("§e/lotto intro §7- 查看乐透玩法");
         sender.sendMessage("§e/lotto join §7- 参与乐透");
         sender.sendMessage("§e/lotto toggleconfirm §7- 开启/关闭参与二次确认");
         if (sender.hasPermission("lotto.admin")) {
@@ -420,7 +421,7 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
             // 所有人可用的命令
             completions.add("join");
             completions.add("help");
-            completions.add("intro"); // 新命令
+            completions.add("intro");
             completions.add("toggleconfirm");
 
             // 仅管理员可见的命令
