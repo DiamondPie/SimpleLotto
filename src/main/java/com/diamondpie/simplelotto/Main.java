@@ -1,6 +1,8 @@
 package com.diamondpie.simplelotto;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -162,9 +164,9 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
 
             sender.sendMessage("§e状态: §a正在进行中");
             sender.sendMessage("§e距离开奖: §b" + formatTime(secondsLeft));
-            sender.sendMessage("§e当前奖池: §d" + currentPot + " " + getItemName());
+            sender.sendMessage(Component.text("§e当前奖池: ").append(getCurrencyComponent(currentPot).color(NamedTextColor.LIGHT_PURPLE)));
             sender.sendMessage("§e参与人数: §b" + participants.size());
-            sender.sendMessage("§e参与费用: §c" + costAmount + " " + getItemName());
+            sender.sendMessage(Component.text("§e参与费用: ").append(getCurrencyComponent(costAmount).color(NamedTextColor.RED)));
         } else {
             sender.sendMessage("§e状态: §7未开始");
             sender.sendMessage("§e下一轮: §7等待中...");
@@ -198,7 +200,7 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
         // 如果需要确认，且不在等待确认列表中
         if (needConfirm && !pendingConfirmation.contains(player.getUniqueId())) {
             pendingConfirmation.add(player.getUniqueId());
-            player.sendMessage("§e[乐透] 参与乐透需要消耗 §c" + costAmount + " " + getItemName() + "§e。");
+            player.sendMessage(Component.text("§e[乐透] 参与乐透需要消耗 ").append(getCurrencyComponent(costAmount).color(NamedTextColor.RED)).append(Component.text("§e。")));
             player.sendMessage("§e[乐透] 请再次输入 §b/lotto join §e以确认参与。");
 
             // 10秒后清除确认状态
@@ -213,7 +215,7 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
 
         // 检查物品是否足够
         if (!player.getInventory().containsAtLeast(new ItemStack(currencyMaterial), costAmount)) {
-            player.sendMessage("§c[乐透] 你的背包中没有足够的 " + getItemName() + " (需要 " + costAmount + " 个)。");
+            player.sendMessage(Component.text("§c[乐透] 你的背包中没有足够的货币 (需要 ").append(getCurrencyComponent(costAmount)).append(Component.text(" 个)。")));
             pendingConfirmation.remove(player.getUniqueId());
             return;
         }
@@ -226,7 +228,7 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
         pendingConfirmation.remove(player.getUniqueId()); // 成功后移除等待确认状态
         currentPot += costAmount; // 增加奖池，但不增加系统初始资金
 
-        player.sendMessage("§a[乐透] 成功参与！当前奖池已达 §d" + currentPot + " " + getItemName() + "§a！");
+        player.sendMessage(Component.text("§a[乐透] 成功参与！当前奖池已达 ").append(getCurrencyComponent(currentPot).color(NamedTextColor.LIGHT_PURPLE)).append(Component.text("§a！")));
     }
 
     private void startLotto(CommandSender starter) {
@@ -245,8 +247,8 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
         Bukkit.broadcast(Component.text("§8§m--------------------------------"));
         Bukkit.broadcast(Component.text("§6§l🎉 乐透活动开始！"));
         Bukkit.broadcast(Component.text("§e输入 §b/lotto join §e参与！"));
-        Bukkit.broadcast(Component.text("§e参与费用: §c" + costAmount + " " + getItemName()));
-        Bukkit.broadcast(Component.text("§e初始奖池: §d" + initialPot + " " + getItemName()));
+        Bukkit.broadcast(Component.text("§e参与费用: §c").append(getCurrencyComponent(costAmount).color(NamedTextColor.RED)));
+        Bukkit.broadcast(Component.text("§e初始奖池: §d").append(getCurrencyComponent(initialPot).color(NamedTextColor.LIGHT_PURPLE)));
         Bukkit.broadcast(Component.text("§e开奖时间: §a" + durationSeconds + "秒后"));
         Bukkit.broadcast(Component.text("§8§m--------------------------------"));
 
@@ -284,7 +286,9 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
 
     private void sendBroadcastUpdate(int secondsLeft) {
         Bukkit.broadcast(Component.text("§e[乐透] 距离开奖仅剩 §c" + formatTime(secondsLeft) + " §e！"));
-        Bukkit.broadcast(Component.text("§e当前奖池: §d" + currentPot + " " + getItemName() + " §7(参与人数: " + participants.size() + ")"));
+        Bukkit.broadcast(Component.text("§e当前奖池: ")
+                .append(getCurrencyComponent(currentPot).color(NamedTextColor.LIGHT_PURPLE))
+                .append(Component.text(" §7(参与人数: " + participants.size() + ")")));
     }
 
     private void endLotto(CommandSender ender) {
@@ -313,7 +317,9 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
         String winnerName = (winner != null) ? winner.getName() : offlineWinner.getName();
 
         Bukkit.broadcast(Component.text("§e恭喜玩家 §a§l" + winnerName + " §e成为了幸运儿！"));
-        Bukkit.broadcast(Component.text("§e他独揽了奖池内的 §d§l" + currentPot + " " + getItemName() + "§e！"));
+        Bukkit.broadcast(Component.text("§e他独揽了奖池内的 ")
+                .append(getCurrencyComponent(currentPot).color(NamedTextColor.LIGHT_PURPLE).decorate(TextDecoration.BOLD))
+                .append(Component.text("§e！")));
         Bukkit.broadcast(Component.text("§8§m--------------------------------"));
 
         // 发放奖励
@@ -382,10 +388,9 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
         return String.format("%02d:%02d", m, s);
     }
 
-    private String getItemName() {
-        // 简单的名称格式化，比如 DIAMOND -> Diamond
-        String name = currencyMaterial.name().toLowerCase().replace("_", " ");
-        return name.substring(0, 1).toUpperCase() + name.substring(1);
+    private Component getCurrencyComponent(int amount) {
+        return Component.text(amount + " ")
+                .append(Component.translatable(currencyMaterial.translationKey()));
     }
 
     @Override
