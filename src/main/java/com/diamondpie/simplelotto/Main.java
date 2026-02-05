@@ -16,6 +16,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
+import org.bukkit.NamespacedKey;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 
@@ -26,7 +28,7 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
     private int currentPot = 0;
     private final Set<UUID> participants = new HashSet<>();
     private final Set<UUID> pendingConfirmation = new HashSet<>();
-    private final Map<UUID, Boolean> confirmToggle = new HashMap<>(); // true = 需要确认, false = 不需要
+    private NamespacedKey confirmKey;
 
     // Config variables
     private Material currencyMaterial;
@@ -41,6 +43,9 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
     public void onEnable() {
         saveDefaultConfig();
         loadConfigValues();
+
+        // 初始化 Key (simplelotto:confirm_enabled)
+        this.confirmKey = new NamespacedKey(this, "confirm_enabled");
 
         // 注册命令和补全器
         var cmd = getCommand("lotto");
@@ -189,8 +194,8 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
     }
 
     private void handleToggleConfirm(Player player) {
-        boolean current = confirmToggle.getOrDefault(player.getUniqueId(), true);
-        confirmToggle.put(player.getUniqueId(), !current);
+        boolean current = isConfirmEnabled(player);
+        setConfirmEnabled(player, !current);
         if (!current) {
             player.sendMessage("§a[乐透] 已开启参与确认功能。");
         } else {
@@ -209,7 +214,7 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
             return;
         }
 
-        boolean needConfirm = confirmToggle.getOrDefault(player.getUniqueId(), true);
+        boolean needConfirm = isConfirmEnabled(player);
 
         // 如果需要确认，且不在等待确认列表中
         if (needConfirm && !pendingConfirmation.contains(player.getUniqueId())) {
@@ -433,5 +438,17 @@ public final class Main extends JavaPlugin implements CommandExecutor, TabComple
             return completions;
         }
         return Collections.emptyList();
+    }
+
+    // 检查玩家是否开启了确认功能（默认为 true）
+    private boolean isConfirmEnabled(Player player) {
+        Boolean value = player.getPersistentDataContainer().get(confirmKey, PersistentDataType.BOOLEAN);
+        // 如果数据不存在（第一次玩），默认返回 true
+        return value == null || value;
+    }
+
+    // 保存玩家的确认设置
+    private void setConfirmEnabled(Player player, boolean enabled) {
+        player.getPersistentDataContainer().set(confirmKey, PersistentDataType.BOOLEAN, enabled);
     }
 }
